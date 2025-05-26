@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Alumnos from './Alumnos';
 import Usuario from './Registro';
 import Login from './login';
-import NotFound from './notfound';
+import NotFound from './Notfound';
 import SidebarLayout from './SidebarLayout';
 import LandingPage from './LandingPage';
 import Menu from './Menu';
