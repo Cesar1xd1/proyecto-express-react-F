@@ -18,6 +18,15 @@ const Login = () => {
     e.preventDefault();
     setError("");
 
+    if (!captchaValido) {
+      Swal.fire(
+        "Verificacion requerida",
+        "Por favor verifica que no eres un robot",
+        "warning"
+      );
+      return;
+    }
+
     try {
       const res = await fetch(`${URL}/login`, {
         method: "POST",
@@ -25,21 +34,17 @@ const Login = () => {
         body: JSON.stringify({ usuario, contraseña, tipoUsuario }),
       });
 
-      if (!captchaValido) {
-        Swal.fire(
-          "Verificacion requerida",
-          "Por favor verifica que no eres un robot",
-          "warning"
-        );
-        return;
-      }
       const data = await res.json();
 
       if (res.ok) {
+        const duracionSesion = 60000;
+        const expiracionSesion = new Date().getTime() + duracionSesion;
+
         localStorage.setItem(
           "usuario",
           JSON.stringify({ usuario, tipoUsuario })
         );
+        localStorage.setItem("sesionExpira", expiracionSesion);
         navigate("/dashboard");
       } else {
         setError(data.message || "Error al iniciar sesión");

@@ -1,40 +1,61 @@
 // SidebarLayout.js
-import React, { useEffect, useState } from 'react';
-import { Button } from 'react-bootstrap';
-import 'bootstrap-icons/font/bootstrap-icons.css';
-import { useNavigate } from 'react-router-dom';
-
+import React, { useEffect, useState } from "react";
+import { Button } from "react-bootstrap";
+import "bootstrap-icons/font/bootstrap-icons.css";
+import { useNavigate } from "react-router-dom";
 
 const SidebarLayout = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false);
-  const [tipoUsuario, setTipoUsuario] = useState('');
+  const [tipoUsuario, setTipoUsuario] = useState("");
   const navigate = useNavigate();
 
-  useEffect(()=> {
-    const usuarioGuardado = JSON.parse(localStorage.getItem('usuario'));
-    if(usuarioGuardado?.tipoUsuario){
+  useEffect(() => {
+    const revisarSesion = () => {
+      const usuarioGuardado = JSON.parse(localStorage.getItem("usuario"));
+      const sesionExpira = localStorage.getItem("sesionExpira");
+      if (!usuarioGuardado || !sesionExpira) {
+        navigate("/login");
+        return;
+      }
+
+      const ahora = new Date().getTime();
+
+      if (ahora > Number(sesionExpira)) {
+        localStorage.removeItem("usuario");
+        localStorage.removeItem("sesionExpira");
+        navigate("/login");
+        return;
+      }
       setTipoUsuario(usuarioGuardado.tipoUsuario);
-    }
-  }, []);
+    };
+
+    revisarSesion();
+
+    const intervalo = setInterval(revisarSesion, 10000);
+
+    return () => clearInterval(intervalo);
+    
+  }, [navigate]);
 
   const toggleSidebar = () => {
     setCollapsed(!collapsed);
   };
 
   const cerrarSesion = () => {
-    localStorage.removeItem('usuario');
-    navigate('/login');
+    localStorage.removeItem("usuario");
+    localStorage.removeItem("sesionExpira");
+    navigate("/login");
   };
 
   return (
-    <div className="d-flex" style={{ minHeight: '100vh' }}>
+    <div className="d-flex" style={{ minHeight: "100vh" }}>
       {/* Sidebar */}
       <div
         className={`bg-dark text-white p-3 transition-all`}
         style={{
-          width: collapsed ? '60px' : '250px',
-          transition: 'width 0.3s',
-          overflow: 'hidden',
+          width: collapsed ? "60px" : "250px",
+          transition: "width 0.3s",
+          overflow: "hidden",
         }}
       >
         <div className="d-flex justify-content-between align-items-center mb-4">
@@ -45,49 +66,57 @@ const SidebarLayout = ({ children }) => {
             onClick={toggleSidebar}
             className="ms-auto"
           >
-            {collapsed ? '☰' : '<'}
+            {collapsed ? "☰" : "<"}
           </Button>
         </div>
 
         <ul className="nav flex-column">
           <li className="nav-item">
-              <a className="nav-link text-white d-flex align-items-center" href="/grupos">
+            <a
+              className="nav-link text-white d-flex align-items-center"
+              href="/grupos"
+            >
               <i className="bi bi-people text-white me-2"></i>
-              {!collapsed && 'Grupos'}
-              </a>
+              {!collapsed && "Grupos"}
+            </a>
           </li>
 
-          {(tipoUsuario === 'admin' || tipoUsuario === 'tutor') && (
+          {(tipoUsuario === "admin" || tipoUsuario === "tutor") && (
             <li className="nav-item">
-              <a className="nav-link text-white d-flex align-items-center" href="/alumnos">
-              <i className="bi bi-backpack text-white me-2"></i>
-              {!collapsed && 'Alumnos'}
+              <a
+                className="nav-link text-white d-flex align-items-center"
+                href="/alumnos"
+              >
+                <i className="bi bi-backpack text-white me-2"></i>
+                {!collapsed && "Alumnos"}
               </a>
             </li>
           )}
 
-          {(tipoUsuario === 'admin') && (
+          {tipoUsuario === "admin" && (
             <li className="nav-item">
-              <a className="nav-link text-white d-flex align-items-center" href="/tutores">
-              <i className="bi bi-duffle text-white me-2"></i>
-              {!collapsed && 'Tutores'}
+              <a
+                className="nav-link text-white d-flex align-items-center"
+                href="/tutores"
+              >
+                <i className="bi bi-duffle text-white me-2"></i>
+                {!collapsed && "Tutores"}
               </a>
-          </li>
+            </li>
           )}
-          
-          
-          
         </ul>
 
-        <Button onClick={cerrarSesion} className="btn btn-outline-light w-100 mt-4">
-          <i className="bi bi-box-arrow-right me-2"></i> {!collapsed && 'Cerrar sesión'}
+        <Button
+          onClick={cerrarSesion}
+          className="btn btn-outline-light w-100 mt-4"
+        >
+          <i className="bi bi-box-arrow-right me-2"></i>{" "}
+          {!collapsed && "Cerrar sesión"}
         </Button>
       </div>
 
       {/* Contenido */}
-      <div className="flex-grow-1 p-4 bg-light">
-        {children}
-      </div>
+      <div className="flex-grow-1 p-4 bg-light">{children}</div>
     </div>
   );
 };
